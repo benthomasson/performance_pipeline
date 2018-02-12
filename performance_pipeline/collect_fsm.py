@@ -1,0 +1,35 @@
+
+from gevent_pipeline.fsm import State, transitions
+
+
+class _Disabled(State):
+
+    @transitions('Collecting')
+    def onEnable(self, controller, message_type, message):
+
+        controller.changeState(Collecting)
+
+
+Disabled = _Disabled()
+
+
+class _Collecting(State):
+
+    @transitions('Disabled')
+    def onDisable(self, controller, message_type, message):
+
+        controller.changeState(Disabled)
+
+
+Collecting = _Collecting()
+
+
+class _State(State):
+
+    @transitions('Collecting')
+    def start(self, controller, message_type, message):
+
+        controller.changeState(Collecting)
+
+
+State = _State()

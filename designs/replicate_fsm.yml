@@ -1,0 +1,25 @@
+diagram_id: 170
+name: diagram
+states:
+- id: 1
+  label: Start
+  x: 617
+  y: 133
+- id: 3
+  label: Disabled
+  x: 618
+  y: 605
+- id: 2
+  label: Replicating
+  x: 619
+  y: 350
+transitions:
+- from_state: Disabled
+  label: onEnable
+  to_state: Replicating
+- from_state: Start
+  label: start
+  to_state: Replicating
+- from_state: Replicating
+  label: onDisable
+  to_state: Disabled

@@ -1,0 +1,25 @@
+diagram_id: 169
+name: diagram
+states:
+- id: 1
+  label: State
+  x: 640
+  y: 138
+- id: 3
+  label: Disabled
+  x: 649
+  y: 614
+- id: 2
+  label: Collecting
+  x: 643
+  y: 353
+transitions:
+- from_state: State
+  label: start
+  to_state: Collecting
+- from_state: Collecting
+  label: onDisable
+  to_state: Disabled
+- from_state: Disabled
+  label: onEnable
+  to_state: Collecting
