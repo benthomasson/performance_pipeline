@@ -31,12 +31,12 @@ class _Collecting(State):
 Collecting = _Collecting()
 
 
-class _State(State):
+class _Start(State):
 
     @transitions('Collecting')
-    def start(self, controller, message_type, message):
+    def start(self, controller):
 
         controller.changeState(Collecting)
 
 
-State = _State()
+Start = _Start()

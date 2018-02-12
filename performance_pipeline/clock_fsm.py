@@ -26,7 +26,7 @@ class _Running(State):
 
         def send_ticks():
             while True:
-                controller.outboxes['default'].put(('Tick', messages.Tick(time.time())))
+                controller.outboxes['default'].put(messages.Tick(time.time()))
                 gevent.sleep(controller.context.get('delay_time', 1.0))
 
         controller.context['thread'] = gevent.spawn(send_ticks)
@@ -43,7 +43,6 @@ Running = _Running()
 class _Stopped(State):
 
     def start(self, controller):
-
         thread = controller.context.get('thread', None)
         if thread is not None:
             gevent.kill(thread)

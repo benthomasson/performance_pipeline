@@ -1,11 +1,13 @@
 
 from gevent_pipeline.fsm import State, transitions
 
+import messages
+
 
 class _Start(State):
 
     @transitions('Waiting')
-    def start(self, controller, message_type, message):
+    def start(self, controller):
 
         controller.changeState(Waiting)
 
@@ -19,6 +21,7 @@ class _Waiting(State):
     def onData(self, controller, message_type, message):
 
         controller.changeState(Queuing)
+        controller.handle_message(message_type, message)
 
     @transitions('Sending')
     def onTick(self, controller, message_type, message):
@@ -32,10 +35,12 @@ Waiting = _Waiting()
 class _Sending(State):
 
     @transitions('Waiting')
-    def start(self, controller, message_type, message):
+    def start(self, controller):
 
+        data = controller.context['buffer']
+        controller.context['buffer'] = []
+        controller.outboxes['default'].put(messages.Data(data))
         controller.changeState(Waiting)
-
 
 Sending = _Sending()
 
@@ -43,10 +48,13 @@ Sending = _Sending()
 class _Queuing(State):
 
     @transitions('Waiting', 'Sending')
-    def start(self, controller, message_type, message):
+    def onData(self, controller, message_type, message):
 
-        controller.changeState(Waiting)
-        controller.changeState(Sending)
+        controller.context['buffer'].append(message.data)
+        if len(controller.context['buffer']) < controller.context['limit']:
+            controller.changeState(Waiting)
+        else:
+            controller.changeState(Sending)
 
 
 Queuing = _Queuing()
