@@ -1,0 +1,25 @@
+diagram_id: 171
+name: diagram
+states:
+- id: 1
+  label: Start
+  x: 696
+  y: 154
+- id: 3
+  label: Stopped
+  x: 715
+  y: 593
+- id: 2
+  label: Running
+  x: 707
+  y: 367
+transitions:
+- from_state: Start
+  label: start
+  to_state: Running
+- from_state: Running
+  label: onStop
+  to_state: Stopped
+- from_state: Stopped
+  label: onRestart
+  to_state: Running

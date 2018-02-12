@@ -1,6 +1,9 @@
 
 from gevent_pipeline.fsm import State, transitions
 
+import messages
+import psutil
+
 
 class _Disabled(State):
 
@@ -14,6 +17,10 @@ Disabled = _Disabled()
 
 
 class _Collecting(State):
+
+    def onTick(self, controller, message_type, message):
+
+        controller.outboxes['default'].put(messages.CpuUsage(psutil.cpu_percent()))
 
     @transitions('Disabled')
     def onDisable(self, controller, message_type, message):
