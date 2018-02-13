@@ -1,0 +1,46 @@
+<div ng-controller="PerformancePipelineController">
+    <svg id="frame"
+         class="PerformancePipeline"
+         ng-attr-height="{{frame_dimensions.height}}"
+         ng-attr-width="{{frame_dimensions.width}}">
+        <!-- needle -->
+        <g ng-attr-transform="translate({{frame_dimensions.width/2}}, {{frame_dimensions.height/2}}) rotate({{needle.rotation}})">
+        <circle cx=0 cy=0 r=20 class="PerformancePipeline__needle-circle"></circle>
+        <line ng-attr-x1="0"
+              ng-attr-y1="0"
+              ng-attr-x2="-120"
+              ng-attr-y2="0"
+              class="PerformancePipeline__needle-line"></line>
+        </g>
+        <!-- dial -->
+        <path ng-attr-transform="translate({{frame_dimensions.width/2}}, {{frame_dimensions.height/2}}) rotate(-90)" ng-attr-d="{{describeArc(0, 0, 150, 0, 180)}}" class="PerformancePipeline__dial-path"/>
+
+        <!-- chart -->
+        <g ng-attr-transform="translate({{frame_dimensions.width/2}}, {{frame_dimensions.height/2 + 200}})">
+        <g ng-attr-transform="translate(-150, 0)">
+        <line ng-attr-x1="0"
+              ng-attr-y1="0"
+              ng-attr-x2="300"
+              ng-attr-y2="0"
+              class="PerformancePipeline__chart-line"></line>
+        <line ng-attr-x1="0"
+              ng-attr-y1="0"
+              ng-attr-x2="0"
+              ng-attr-y2="-150"
+              class="PerformancePipeline__chart-line"></line>
+        <g ng-repeat="item in history track by $index" ng-attr-transform="translate({{10*$index}}, {{-item*150}})">
+            <circle cx=0 cy=0 r=2 class="PerformancePipeline__chart-circle">
+            </circle>
+        </g>
+        <g ng-repeat="item in history_pairs track by $index">
+        <line ng-attr-x1="{{($index)*10}}"
+              ng-attr-y1="{{item[0] * -150}}"
+              ng-attr-x2="{{($index+1)*10}}"
+              ng-attr-y2="{{item[1] * -150}}"
+              class="PerformancePipeline__chart-line"></line>
+        </g>
+        </g>
+        </g>
+
+    </svg>
+</div>

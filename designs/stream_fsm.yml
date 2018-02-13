@@ -1,0 +1,25 @@
+diagram_id: 67
+name: diagram
+states:
+- id: 1
+  label: Sending
+  x: 596
+  y: 591
+- id: 2
+  label: Start
+  x: 603
+  y: 139
+- id: 4
+  label: Waiting
+  x: 597
+  y: 363
+transitions:
+- from_state: Start
+  label: start
+  to_state: Waiting
+- from_state: Waiting
+  label: onBatch
+  to_state: Sending
+- from_state: Sending
+  label: onTick
+  to_state: Waiting

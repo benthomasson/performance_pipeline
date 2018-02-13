@@ -21,10 +21,23 @@ import performance_pipeline.replicate_fsm
 import performance_pipeline.batch_fsm
 from gevent_pipeline.fsm import FSMController, Channel
 from performance_pipeline.data_channel import DataChannel
-from gevent_pipeline.conf import settings
+from gevent_pipeline.conf import settings as gp_settings
+from performance_pipeline.conf import settings
 import gevent
+from performance_pipeline.server import SocketIOServer, queue
+from bottle import run
 
 logger = logging.getLogger('tick')
+
+class Bundle(object):
+
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
+
+
+def web_server():
+    run(server=SocketIOServer, host='0.0.0.0', port=settings.web_port)
 
 
 class _LoggingTracer(object):
@@ -56,13 +69,13 @@ def main(args=None):
     parsed_args = docopt(__doc__, args)
     if parsed_args['--debug']:
         logging.basicConfig(level=logging.DEBUG)
-        settings.instrumented = True
+        gp_settings.instrumented = True
     elif parsed_args['--verbose']:
         logging.basicConfig(level=logging.INFO)
     else:
         logging.basicConfig(level=logging.WARNING)
 
-    clock = FSMController(dict(delay_time=2), 'clock_fsm', performance_pipeline.clock_fsm.Start, LoggingTracer)
+    clock = FSMController(dict(delay_time=0.1), 'clock_fsm', performance_pipeline.clock_fsm.Start, LoggingTracer)
     batch_clock = FSMController(dict(delay_time=10), 'clock_fsm', performance_pipeline.clock_fsm.Start, LoggingTracer)
     collector = FSMController(dict(), 'collect_fsm', performance_pipeline.collect_fsm.Start, LoggingTracer)
     replicator = FSMController(dict(), 'replicate_fsm', performance_pipeline.replicate_fsm.Start, LoggingTracer)
@@ -75,13 +88,15 @@ def main(args=None):
     c1 = Channel(replicator, batcher, LoggingTracer)
     batch_clock.outboxes['default'] = Channel(batch_clock, batcher, LoggingTracer, c1)
     replicator.outboxes['two'] = DataChannel(c1)
+    replicator.outboxes['three'] = Channel(replicator, Bundle(name="webserver") , LoggingTracer, queue)
     batcher.inboxes['default'] = replicator.outboxes['two']
     batcher.outboxes['default'] = LoggingChannel
     gevent.joinall([gevent.spawn(clock.receive_messages),
                     gevent.spawn(batch_clock.receive_messages),
                     gevent.spawn(collector.receive_messages),
                     gevent.spawn(replicator.receive_messages),
-                    gevent.spawn(batcher.receive_messages)])
+                    gevent.spawn(batcher.receive_messages),
+                    gevent.spawn(web_server)])
     return 0
 
 

@@ -14,6 +14,13 @@ with open('HISTORY.rst') as history_file:
 requirements = [
     # TODO: put package requirements here
     'psutil',
+    'bottle',
+    'pyyaml',
+    'docopt',
+    'bottle',
+    'gevent==1.1b4',
+    'gevent-socketio',
+    'jinja2',
 ]
 
 setup_requirements = [

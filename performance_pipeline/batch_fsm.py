@@ -39,7 +39,7 @@ class _Sending(State):
 
         data = controller.context['buffer']
         controller.context['buffer'] = []
-        controller.outboxes['default'].put(messages.Data(data))
+        controller.outboxes['default'].put(messages.Batch(data))
         controller.changeState(Waiting)
 
 Sending = _Sending()

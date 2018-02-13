@@ -1,0 +1,19 @@
+{
+  "name": "performance_pipeline",
+  "version": "1.0.0",
+  "description": "Performance measurement",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ben Thomasson",
+  "license": "ISC",
+  "dependencies": {
+      "angular": "~1.6.4",
+      "angular-ui-router": "",
+      "webpack": "",
+      "jshint": "",
+      "less": "",
+      "require": "",
+      "inherits": ""
+   }
+}
