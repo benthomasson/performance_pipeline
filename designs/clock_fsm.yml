@@ -1,5 +1,5 @@
 diagram_id: 171
-name: diagram
+name: clock_fsm
 states:
 - id: 1
   label: Start

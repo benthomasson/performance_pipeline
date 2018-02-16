@@ -1,5 +1,5 @@
 diagram_id: 170
-name: diagram
+name: replicate_fsm
 states:
 - id: 1
   label: Start

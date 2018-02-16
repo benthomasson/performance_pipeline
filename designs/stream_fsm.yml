@@ -1,10 +1,10 @@
 diagram_id: 67
-name: diagram
+name: stream_fsm
 states:
 - id: 1
   label: Sending
-  x: 596
-  y: 591
+  x: 593
+  y: 634
 - id: 2
   label: Start
   x: 603
@@ -23,3 +23,6 @@ transitions:
 - from_state: Sending
   label: onTick
   to_state: Waiting
+- from_state: Waiting
+  label: onTick
+  to_state: Sending

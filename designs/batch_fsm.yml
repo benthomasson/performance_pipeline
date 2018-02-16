@@ -1,5 +1,5 @@
 diagram_id: 131
-name: diagram
+name: batch_fsm
 states:
 - id: 3
   label: Queuing
@@ -22,13 +22,13 @@ transitions:
   label: onData
   to_state: Queuing
 - from_state: Queuing
-  label: start
+  label: onData
   to_state: Sending
 - from_state: Waiting
   label: onTick
   to_state: Sending
 - from_state: Queuing
-  label: start
+  label: onData
   to_state: Waiting
 - from_state: Sending
   label: start

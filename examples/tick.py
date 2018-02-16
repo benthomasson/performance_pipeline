@@ -26,6 +26,10 @@ from performance_pipeline.conf import settings
 import gevent
 from performance_pipeline.server import SocketIOServer, queue
 from bottle import run
+import yaml
+from itertools import count
+
+
 
 logger = logging.getLogger('tick')
 
@@ -43,10 +47,10 @@ def web_server():
 class _LoggingTracer(object):
 
     def __init__(self):
-        pass
+        self.counter = count(start=1, step=1)
 
     def trace_order_seq(self):
-        return 1
+        return next(self.counter)
 
     def send_trace_message(self, message):
         logger.debug("TRACE: %s", message)
@@ -63,6 +67,20 @@ class _LoggingChannel(object):
 LoggingChannel = _LoggingChannel()
 
 
+class YAMLFileLoggingTracer(object):
+
+    def __init__(self, file):
+        self.file = file
+        self.counter = count(start=1, step=1)
+
+    def trace_order_seq(self):
+        return next(self.counter)
+
+    def send_trace_message(self, message):
+        with open(self.file, 'a') as f:
+            f.write(yaml.dump([dict(message._asdict())], default_flow_style=False))
+
+
 def main(args=None):
     if args is None:
         args = sys.argv[1:]
@@ -75,20 +93,25 @@ def main(args=None):
     else:
         logging.basicConfig(level=logging.WARNING)
 
-    clock = FSMController(dict(delay_time=0.1), 'clock_fsm', performance_pipeline.clock_fsm.Start, LoggingTracer)
-    batch_clock = FSMController(dict(delay_time=10), 'clock_fsm', performance_pipeline.clock_fsm.Start, LoggingTracer)
-    collector = FSMController(dict(), 'collect_fsm', performance_pipeline.collect_fsm.Start, LoggingTracer)
-    replicator = FSMController(dict(), 'replicate_fsm', performance_pipeline.replicate_fsm.Start, LoggingTracer)
-    batcher = FSMController(dict(buffer=list(), limit=500), 'batch_fsm', performance_pipeline.batch_fsm.Start, LoggingTracer)
-    clock.outboxes['default'] = Channel(clock, collector, LoggingTracer)
+    fsm_tracer = YAMLFileLoggingTracer("fsm_trace.yml")
+    channel_tracer = YAMLFileLoggingTracer("channel_trace.yml")
+
+    fsm_id_seq = count(start=1, step=1)
+
+    clock = FSMController(dict(delay_time=0.1), 'clock_fsm', next(fsm_id_seq), performance_pipeline.clock_fsm.Start, fsm_tracer, channel_tracer)
+    batch_clock = FSMController(dict(delay_time=2), 'clock_fsm', next(fsm_id_seq), performance_pipeline.clock_fsm.Start, fsm_tracer, channel_tracer)
+    collector = FSMController(dict(), 'collect_fsm', next(fsm_id_seq), performance_pipeline.collect_fsm.Start, fsm_tracer, channel_tracer)
+    replicator = FSMController(dict(), 'replicate_fsm', next(fsm_id_seq), performance_pipeline.replicate_fsm.Start, fsm_tracer, channel_tracer)
+    batcher = FSMController(dict(buffer=list(), limit=10), 'batch_fsm', next(fsm_id_seq), performance_pipeline.batch_fsm.Start, fsm_tracer, channel_tracer)
+    clock.outboxes['default'] = Channel(clock, collector, channel_tracer)
     collector.inboxes['default'] = clock.outboxes['default']
-    collector.outboxes['default'] = Channel(collector, replicator, LoggingTracer)
+    collector.outboxes['default'] = Channel(collector, replicator, channel_tracer)
     replicator.inboxes['data'] = collector.outboxes['default']
     replicator.outboxes['one'] = LoggingChannel
-    c1 = Channel(replicator, batcher, LoggingTracer)
-    batch_clock.outboxes['default'] = Channel(batch_clock, batcher, LoggingTracer, c1)
+    c1 = Channel(replicator, batcher, channel_tracer)
+    batch_clock.outboxes['default'] = Channel(batch_clock, batcher, channel_tracer, c1)
     replicator.outboxes['two'] = DataChannel(c1)
-    replicator.outboxes['three'] = Channel(replicator, Bundle(name="webserver") , LoggingTracer, queue)
+    replicator.outboxes['three'] = Channel(replicator, Bundle(name="webserver", fsm_id=next(fsm_id_seq)) , channel_tracer, queue)
     batcher.inboxes['default'] = replicator.outboxes['two']
     batcher.outboxes['default'] = LoggingChannel
     gevent.joinall([gevent.spawn(clock.receive_messages),
