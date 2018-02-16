@@ -21,6 +21,7 @@ import performance_pipeline.replicate_fsm
 import performance_pipeline.batch_fsm
 from gevent_pipeline.fsm import FSMController, Channel
 from performance_pipeline.data_channel import DataChannel
+from performance_pipeline.messages import serialize
 from gevent_pipeline.conf import settings as gp_settings
 from performance_pipeline.conf import settings
 import gevent
@@ -78,7 +79,8 @@ class YAMLFileLoggingTracer(object):
 
     def send_trace_message(self, message):
         with open(self.file, 'a') as f:
-            f.write(yaml.dump([dict(message._asdict())], default_flow_style=False))
+            message_type, message_data = serialize(message)
+            f.write(yaml.dump([message_data], default_flow_style=False))
 
 
 def main(args=None):
