@@ -25,20 +25,20 @@ from performance_pipeline.messages import serialize
 from gevent_pipeline.conf import settings as gp_settings
 from performance_pipeline.conf import settings
 import gevent
+from gevent.queue import Queue
 from performance_pipeline.server import SocketIOServer, queue
 from bottle import run
 import yaml
 from itertools import count
 
 
-
 logger = logging.getLogger('tick')
+
 
 class Bundle(object):
 
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
-
 
 
 def web_server():
@@ -105,16 +105,15 @@ def main(args=None):
     collector = FSMController(dict(), 'collect_fsm', next(fsm_id_seq), performance_pipeline.collect_fsm.Start, fsm_tracer, channel_tracer)
     replicator = FSMController(dict(), 'replicate_fsm', next(fsm_id_seq), performance_pipeline.replicate_fsm.Start, fsm_tracer, channel_tracer)
     batcher = FSMController(dict(buffer=list(), limit=10), 'batch_fsm', next(fsm_id_seq), performance_pipeline.batch_fsm.Start, fsm_tracer, channel_tracer)
-    clock.outboxes['default'] = Channel(clock, collector, channel_tracer)
-    collector.inboxes['default'] = clock.outboxes['default']
-    collector.outboxes['default'] = Channel(collector, replicator, channel_tracer)
-    replicator.inboxes['data'] = collector.outboxes['default']
+    clock.outboxes['default'] = Channel(clock, collector, channel_tracer, collector.inboxes['default'])
+    replicator.inboxes['data'] = Queue()
+    collector.outboxes['default'] = Channel(collector, replicator, channel_tracer, replicator.inboxes['data'])
     replicator.outboxes['one'] = LoggingChannel
-    c1 = Channel(replicator, batcher, channel_tracer)
-    batch_clock.outboxes['default'] = Channel(batch_clock, batcher, channel_tracer, c1)
-    replicator.outboxes['two'] = DataChannel(c1)
-    replicator.outboxes['three'] = Channel(replicator, Bundle(name="webserver", fsm_id=next(fsm_id_seq)) , channel_tracer, queue)
-    batcher.inboxes['default'] = replicator.outboxes['two']
+    c1 = DataChannel(Channel(replicator, batcher, channel_tracer, batcher.inboxes['default']))
+    c2 = Channel(batch_clock, batcher, channel_tracer, batcher.inboxes['default'])
+    replicator.outboxes['two'] = c1
+    batch_clock.outboxes['default'] = c2
+    replicator.outboxes['three'] = Channel(replicator, Bundle(name="webserver", fsm_id=next(fsm_id_seq)), channel_tracer, queue)
     batcher.outboxes['default'] = LoggingChannel
     gevent.joinall([gevent.spawn(clock.receive_messages),
                     gevent.spawn(batch_clock.receive_messages),
