@@ -1,0 +1,68 @@
+fsms:
+    - fsm: performance_pipeline.clock_fsm
+      name: clock
+      id: 1
+      init_state: performance_pipeline.clock_fsm.Start
+      context:
+          delay_time: 0.1
+    - fsm: performance_pipeline.clock_fsm
+      name: batch_clock
+      id: 2
+      init_state: performance_pipeline.clock_fsm.Start
+      context:
+          delay_time: 2
+    - fsm: performance_pipeline.collect_fsm
+      name: collector
+      init_state: performance_pipeline.collect_fsm.Start
+      id: 3
+    - fsm: performance_pipeline.replicate_fsm
+      name: replicator
+      init_state: performance_pipeline.replicate_fsm.Start
+      id: 4
+    - fsm: performance_pipeline.batch_fsm
+      name: batcher
+      id: 5
+      init_state: performance_pipeline.batch_fsm.Start
+      context:
+          limit: 10
+          buffer: []
+    - fsm: performance_pipeline.web_fsm
+      name: webserver
+      id: 6
+      init_state: performance_pipeline.web_fsm.Start
+channels:
+    - from_fsm: clock
+      from_fsm_id: 1
+      to_fsm: collector
+      to_fsm_id: 3
+      outbox: default
+      inbox: default
+      type: Channel
+    - from_fsm: collector
+      from_fsm_id: 3
+      to_fsm: replicator
+      to_fsm_id: 4
+      outbox: default
+      inbox: data
+      type: Channel
+    - from_fsm: replicator
+      from_fsm_id: 4
+      to_fsm: batcher
+      to_fsm_id: 5
+      outbox: two
+      inbox: default
+      type: DataChannel
+    - from_fsm: batch_clock
+      from_fsm_id: 2
+      to_fsm: batcher
+      to_fsm_id: 5
+      outbox: default
+      inbox: default
+      type: Channel
+    - from_fsm: replicator
+      from_fsm_id: 4
+      to_fsm: webserver
+      to_fsm_id: 6
+      outbox: three
+      inbox: default
+      type: DataChannel
