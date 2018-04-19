@@ -1,7 +1,7 @@
 
 from gevent_pipeline.fsm import State, transitions
 
-import messages
+import performance_pipeline.messages as messages
 
 
 class _Start(State):

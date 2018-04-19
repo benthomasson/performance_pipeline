@@ -8,12 +8,16 @@
   "author": "Ben Thomasson",
   "license": "ISC",
   "dependencies": {
-      "angular": "~1.6.4",
-      "angular-ui-router": "",
-      "webpack": "",
-      "jshint": "",
-      "less": "",
-      "require": "",
-      "inherits": ""
-   }
+    "angular": "~1.6.4",
+    "angular-ui-router": "",
+    "webpack": "",
+    "jshint": "",
+    "less": "",
+    "require": "",
+    "inherits": ""
+  },
+  "devDependencies": {
+    "webpack": "^3.0.0",
+    "webpack-cli": "^2.0.14"
+  }
 }

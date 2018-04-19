@@ -12,7 +12,7 @@ var PerformancePipelineController = function($scope, $document, $location, $wind
     $scope.frame_dimensions = {'width': window.innerWidth,
                                'height': window.innerHeight};
 
-    $scope.socket = io.connect('/connect');
+    $scope.socket = io();
 
     $scope.socket.on('log', function (message) {
         console.log(["log", message]);
@@ -20,7 +20,7 @@ var PerformancePipelineController = function($scope, $document, $location, $wind
 
     $scope.socket.on('CpuUsage', function (message) {
         console.log(["CpuUsage", message]);
-        var percent = message[0] / 100.0;
+        var percent = message / 100.0;
         if (percent !== undefined ) {
             $scope.needle.new_rotation = Math.max(Math.min(1.0, percent), 0.0) * 180;
             if ($scope.history.length > 0) {

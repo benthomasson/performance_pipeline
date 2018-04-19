@@ -18,8 +18,8 @@ requirements = [
     'pyyaml',
     'docopt',
     'bottle',
-    'gevent==1.1b4',
-    'gevent-socketio',
+    'gevent',
+    'python-socketio',
     'jinja2',
 ]
 

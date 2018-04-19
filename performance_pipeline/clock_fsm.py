@@ -3,7 +3,7 @@ from gevent_pipeline.fsm import State, transitions
 
 import time
 import gevent
-import messages
+import performance_pipeline.messages as messages
 
 
 class _Start(State):

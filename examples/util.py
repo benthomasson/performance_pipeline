@@ -3,9 +3,12 @@ import logging
 import yaml
 from itertools import count
 from performance_pipeline.messages import serialize
-from performance_pipeline.server import SocketIOServer
+from performance_pipeline.server import app
 from performance_pipeline.conf import settings
-from bottle import run
+
+from gevent.pywsgi import WSGIServer
+from geventwebsocket import WebSocketError
+from geventwebsocket.handler import WebSocketHandler
 
 logger = logging.getLogger('tick')
 
@@ -17,7 +20,9 @@ class Bundle(object):
 
 
 def web_server():
-    run(server=SocketIOServer, host='0.0.0.0', port=settings.web_port)
+    WSGIServer(('0.0.0.0', settings.web_port), app, handler_class=WebSocketHandler).serve_forever()
+
+
 
 
 class _LoggingTracer(object):
