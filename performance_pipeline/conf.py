@@ -5,5 +5,4 @@ class _Settings(object):
         self.web_port = 8080
 
 
-
 settings = _Settings()

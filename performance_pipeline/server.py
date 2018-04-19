@@ -29,9 +29,9 @@ class DefaultNamespace(BaseNamespace, BroadcastMixin):
 
     def initialize(self):
         logger.debug("INIT")
-        print self.__dict__.keys()
-        print self.ns_name
-        print self.request
+        print(self.__dict__.keys())
+        print(self.ns_name)
+        print(self.request)
 
         self.emit("data", dict(log="connected"))
         gevent.spawn(self.read_queue)
@@ -79,7 +79,7 @@ class SocketIOServer(ServerAdapter):
                                resource=resource,
                                policy_server=policy_server,
                                transports=['websocket', 'xhr-multipart', 'xhr-polling']).serve_forever()
-            except socket.error, e:
+            except socket.error as e:
                 if e.errno == 98:
                     logger.warning(str(e))
                     raise
