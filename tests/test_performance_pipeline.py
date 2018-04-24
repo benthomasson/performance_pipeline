@@ -6,9 +6,6 @@
 
 import unittest
 
-from performance_pipeline import performance_pipeline
-
-
 class TestPerformance_pipeline(unittest.TestCase):
     """Tests for `performance_pipeline` package."""
 

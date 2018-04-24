@@ -5,8 +5,7 @@ from gevent_pipeline.fsm import FSMController, Channel, NullTracer
 from performance_pipeline.data_channel import DataChannel
 
 import performance_pipeline.clock_fsm
-import performance_pipeline.clock_fsm
-import performance_pipeline.collect_fsm
+import performance_pipeline.sample_fsm
 import performance_pipeline.replicate_fsm
 import performance_pipeline.batch_fsm
 import performance_pipeline.web_fsm
@@ -27,12 +26,12 @@ batch_clock = FSMController(dict(delay_time=2),
                             performance_pipeline.clock_fsm.Start,
                             fsm_tracer,
                             channel_tracer)
-collector = FSMController(dict(),
-                          'collect_fsm',
-                          3,
-                          performance_pipeline.collect_fsm.Start,
-                          fsm_tracer,
-                          channel_tracer)
+sampler = FSMController(dict(),
+                        'sample_fsm',
+                        3,
+                        performance_pipeline.sample_fsm.Start,
+                        fsm_tracer,
+                        channel_tracer)
 replicator = FSMController(dict(),
                            'replicate_fsm',
                            4,
@@ -57,14 +56,14 @@ replicator.inboxes['data'] = Queue()
 
 
 clock.outboxes['default'] = Channel(clock,
-                                    collector,
+                                    sampler,
                                     channel_tracer,
-                                    collector.inboxes['default'])
+                                    sampler.inboxes['default'])
 
-collector.outboxes['default'] = Channel(collector,
-                                        replicator,
-                                        channel_tracer,
-                                        replicator.inboxes['data'])
+sampler.outboxes['default'] = Channel(sampler,
+                                      replicator,
+                                      channel_tracer,
+                                      replicator.inboxes['data'])
 
 replicator.outboxes['two'] = DataChannel(replicator,
                                          batcher,
@@ -85,7 +84,7 @@ replicator.outboxes['three'] = DataChannel(replicator,
 def start_pipeline():
     gevent.joinall([gevent.spawn(clock.receive_messages),
                     gevent.spawn(batch_clock.receive_messages),
-                    gevent.spawn(collector.receive_messages),
+                    gevent.spawn(sampler.receive_messages),
                     gevent.spawn(replicator.receive_messages),
                     gevent.spawn(batcher.receive_messages),
                     gevent.spawn(webserver.receive_messages),

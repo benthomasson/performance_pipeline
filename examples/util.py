@@ -7,7 +7,6 @@ from performance_pipeline.server import app
 from performance_pipeline.conf import settings
 
 from gevent.pywsgi import WSGIServer
-from geventwebsocket import WebSocketError
 from geventwebsocket.handler import WebSocketHandler
 
 logger = logging.getLogger('tick')

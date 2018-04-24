@@ -1,5 +1,5 @@
 diagram_id: 169
-name: collect_fsm
+name: sample_fsm
 states:
 - id: 1
   label: Start
@@ -10,16 +10,16 @@ states:
   x: 649
   y: 614
 - id: 2
-  label: Collecting
+  label: Sampling
   x: 643
   y: 353
 transitions:
 - from_state: Start
   label: start
-  to_state: Collecting
-- from_state: Collecting
+  to_state: Sampling
+- from_state: Sampling
   label: onDisable
   to_state: Disabled
 - from_state: Disabled
   label: onEnable
-  to_state: Collecting
+  to_state: Sampling

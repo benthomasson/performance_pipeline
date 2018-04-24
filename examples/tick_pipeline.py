@@ -11,7 +11,7 @@ from util import LoggingChannel, Bundle, web_server
 from performance_pipeline.server import queue
 
 import performance_pipeline.clock_fsm
-import performance_pipeline.collect_fsm
+import performance_pipeline.sample_fsm
 import performance_pipeline.replicate_fsm
 import performance_pipeline.batch_fsm
 
@@ -23,7 +23,7 @@ channel_tracer = YAMLFileLoggingTracer("channel_trace.yml")
 
 fsm_id_seq = count(start=1, step=1)
 
-#FSMs
+# FSMs
 clock = FSMController(dict(delay_time=0.1),
                       'clock_fsm',
                       next(fsm_id_seq),
@@ -36,12 +36,12 @@ batch_clock = FSMController(dict(delay_time=2),
                             performance_pipeline.clock_fsm.Start,
                             fsm_tracer,
                             channel_tracer)
-collector = FSMController(dict(),
-                          'collect_fsm',
-                          next(fsm_id_seq),
-                          performance_pipeline.collect_fsm.Start,
-                          fsm_tracer,
-                          channel_tracer)
+sampler = FSMController(dict(),
+                        'sample_fsm',
+                        next(fsm_id_seq),
+                        performance_pipeline.sample_fsm.Start,
+                        fsm_tracer,
+                        channel_tracer)
 replicator = FSMController(dict(),
                            'replicate_fsm',
                            next(fsm_id_seq),
@@ -56,17 +56,17 @@ batcher = FSMController(dict(buffer=list(),
                         fsm_tracer,
                         channel_tracer)
 
-#Channels
+# Channels
 replicator.inboxes['data'] = Queue()
 
 clock.outboxes['default'] = Channel(clock,
-                                    collector,
+                                    sampler,
                                     channel_tracer,
-                                    collector.inboxes['default'])
-collector.outboxes['default'] = Channel(collector,
-                                        replicator,
-                                        channel_tracer,
-                                        replicator.inboxes['data'])
+                                    sampler.inboxes['default'])
+sampler.outboxes['default'] = Channel(sampler,
+                                      replicator,
+                                      channel_tracer,
+                                      replicator.inboxes['data'])
 replicator.outboxes['one'] = LoggingChannel
 replicator.outboxes['two'] = DataChannel(replicator,
                                          batcher,
@@ -83,10 +83,11 @@ replicator.outboxes['three'] = Channel(replicator,
                                        queue)
 batcher.outboxes['default'] = LoggingChannel
 
+
 def start_pipeline():
     gevent.joinall([gevent.spawn(clock.receive_messages),
                     gevent.spawn(batch_clock.receive_messages),
-                    gevent.spawn(collector.receive_messages),
+                    gevent.spawn(sampler.receive_messages),
                     gevent.spawn(replicator.receive_messages),
                     gevent.spawn(batcher.receive_messages),
                     gevent.spawn(web_server)])

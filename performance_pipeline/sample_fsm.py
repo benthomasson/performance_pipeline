@@ -7,16 +7,16 @@ import psutil
 
 class _Disabled(State):
 
-    @transitions('Collecting')
+    @transitions('Sampling')
     def onEnable(self, controller, message_type, message):
 
-        controller.changeState(Collecting)
+        controller.changeState(Sampling)
 
 
 Disabled = _Disabled()
 
 
-class _Collecting(State):
+class _Sampling(State):
 
     def onTick(self, controller, message_type, message):
 
@@ -28,15 +28,15 @@ class _Collecting(State):
         controller.changeState(Disabled)
 
 
-Collecting = _Collecting()
+Sampling = _Sampling()
 
 
 class _Start(State):
 
-    @transitions('Collecting')
+    @transitions('Sampling')
     def start(self, controller):
 
-        controller.changeState(Collecting)
+        controller.changeState(Sampling)
 
 
 Start = _Start()

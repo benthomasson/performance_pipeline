@@ -11,9 +11,9 @@ fsms:
       init_state: performance_pipeline.clock_fsm.Start
       context:
           delay_time: 2
-    - fsm: performance_pipeline.collect_fsm
+    - fsm: performance_pipeline.sample_fsm
       name: collector
-      init_state: performance_pipeline.collect_fsm.Start
+      init_state: performance_pipeline.sample_fsm.Start
       id: 3
     - fsm: performance_pipeline.replicate_fsm
       name: replicator
