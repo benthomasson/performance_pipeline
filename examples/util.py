@@ -1,6 +1,7 @@
 
-import logging
 import yaml
+import json
+import logging
 from itertools import count
 from performance_pipeline.messages import serialize
 from performance_pipeline.server import app
@@ -20,8 +21,6 @@ class Bundle(object):
 
 def web_server():
     WSGIServer(('0.0.0.0', settings.web_port), app, handler_class=WebSocketHandler).serve_forever()
-
-
 
 
 class _LoggingTracer(object):
@@ -45,6 +44,16 @@ class _LoggingChannel(object):
 
 
 LoggingChannel = _LoggingChannel()
+
+
+class FileChannel(object):
+
+    def __init__(self, file, mode):
+        self.file = open(file, mode, 0)
+
+    def put(self, message):
+        self.file.write(json.dumps(serialize(message)))
+        self.file.write('\n')
 
 
 class YAMLFileLoggingTracer(object):
