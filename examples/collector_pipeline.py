@@ -7,7 +7,7 @@ from performance_pipeline.data_channel import DataChannel, Channel
 import performance_pipeline.collect_fsm
 import performance_pipeline.web_fsm
 import performance_pipeline.replicate_fsm
-from util import FileChannel
+from util import FileChannel, WebsocketChannel
 
 
 fsm_tracer = NullTracer
@@ -46,6 +46,7 @@ replicator.outboxes['default'] = Channel(replicator,
                                          webserver.inboxes['default'])
 
 replicator.outboxes['persist'] = FileChannel('measurements', 'a')
+replicator.outboxes['websocket'] = WebsocketChannel('ws://localhost:8000/ws/collect')
 
 
 def start_pipeline():

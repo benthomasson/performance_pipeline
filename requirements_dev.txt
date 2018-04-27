@@ -12,6 +12,7 @@ autopep8
 psutil
 pyzmq
 pycapnp
+websocket-client
 
 
 

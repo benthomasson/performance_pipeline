@@ -28,7 +28,7 @@ class _Collecting(State):
 
         context = zmq.Context()
         socket = context.socket(zmq.SUB)
-        socket.connect("tcp://localhost:5559")
+        socket.connect("tcp://meganuke:5559")
         socket.setsockopt(zmq.SUBSCRIBE, b'')
 
         def collect():

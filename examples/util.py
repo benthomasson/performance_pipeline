@@ -1,7 +1,9 @@
 
+import gevent
 import yaml
 import json
 import logging
+import websocket
 from itertools import count
 from performance_pipeline.messages import serialize
 from performance_pipeline.server import app
@@ -34,6 +36,7 @@ class _LoggingTracer(object):
     def send_trace_message(self, message):
         logger.debug("TRACE: %s", message)
 
+
 LoggingTracer = _LoggingTracer()
 
 
@@ -54,6 +57,32 @@ class FileChannel(object):
     def put(self, message):
         self.file.write(json.dumps(serialize(message)))
         self.file.write('\n')
+
+
+class WebsocketChannel(object):
+
+    def __init__(self, address):
+        self.socket = websocket.WebSocketApp(address,
+                                             on_message=self.on_message,
+                                             on_error=self.on_error,
+                                             on_close=self.on_close,
+                                             on_open=self.on_open)
+        self.thread = gevent.spawn(self.socket.run_forever)
+
+    def put(self, message):
+        self.socket.send(json.dumps(serialize(message)))
+
+    def on_open(self, ws):
+        pass
+
+    def on_message(self, ws):
+        pass
+
+    def on_close(self, ws):
+        self.thread.kill()
+
+    def on_error(self, ws, error):
+        print ('WebsocketChannel on_error', error)
 
 
 class YAMLFileLoggingTracer(object):
