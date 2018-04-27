@@ -62,7 +62,11 @@ class FileChannel(object):
 class WebsocketChannel(object):
 
     def __init__(self, address):
-        self.socket = websocket.WebSocketApp(address,
+        self.address = address
+        self.start_socket_thread()
+
+    def start_socket_thread(self):
+        self.socket = websocket.WebSocketApp(self.address,
                                              on_message=self.on_message,
                                              on_error=self.on_error,
                                              on_close=self.on_close,
@@ -70,7 +74,11 @@ class WebsocketChannel(object):
         self.thread = gevent.spawn(self.socket.run_forever)
 
     def put(self, message):
-        self.socket.send(json.dumps(serialize(message)))
+        try:
+            self.socket.send(json.dumps(serialize(message)))
+        except:
+            self.thread.kill()
+            self.start_socket_thread()
 
     def on_open(self, ws):
         pass
@@ -83,6 +91,10 @@ class WebsocketChannel(object):
 
     def on_error(self, ws, error):
         print ('WebsocketChannel on_error', error)
+        self.on_close(ws)
+        gevent.sleep(1)
+        self.start_socket_thread()
+
 
 
 class YAMLFileLoggingTracer(object):
