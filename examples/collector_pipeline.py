@@ -1,5 +1,6 @@
 
 import gevent
+import logging
 from gevent.queue import Queue
 from gevent_pipeline.fsm import FSMController, NullTracer
 from performance_pipeline.data_channel import DataChannel, Channel
@@ -8,10 +9,18 @@ import performance_pipeline.collect_fsm
 import performance_pipeline.web_fsm
 import performance_pipeline.replicate_fsm
 from util import FileChannel, WebsocketChannel
+from util import YAMLFileLoggingTracer
+
+
+logger = logging.getLogger('collector_pipeline')
 
 
 fsm_tracer = NullTracer
 channel_tracer = NullTracer
+fsm_tracer = YAMLFileLoggingTracer("fsm_trace.yml")
+channel_tracer = YAMLFileLoggingTracer("channel_trace.yml")
+
+print ('collector')
 
 collector = FSMController(dict(),
                           'collect_fsm',
@@ -19,12 +28,14 @@ collector = FSMController(dict(),
                           performance_pipeline.collect_fsm.Start,
                           fsm_tracer,
                           channel_tracer)
+print ('replicator')
 replicator = FSMController(dict(),
                            'replicate_fsm',
                            2,
                            performance_pipeline.replicate_fsm.Start,
                            fsm_tracer,
                            channel_tracer)
+print ('webserver')
 webserver = FSMController(dict(),
                           'web_fsm',
                           3,
@@ -45,8 +56,11 @@ replicator.outboxes['default'] = Channel(replicator,
                                          channel_tracer,
                                          webserver.inboxes['default'])
 
-replicator.outboxes['persist'] = FileChannel('measurements', 'a')
-replicator.outboxes['websocket'] = WebsocketChannel('ws://localhost:8000/ws/collect')
+replicator.outboxes['persist'] = FileChannel('measurements', 'ab')
+replicator.outboxes['websocket'] = WebsocketChannel('ws://192.168.99.100:8003/ws/collect')
+
+logger.debug("Defined pipeline")
+print("Defined pipeline")
 
 
 def start_pipeline():
@@ -54,3 +68,5 @@ def start_pipeline():
                     gevent.spawn(replicator.receive_messages),
                     gevent.spawn(webserver.receive_messages),
                     ])
+
+

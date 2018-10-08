@@ -55,8 +55,8 @@ class FileChannel(object):
         self.file = open(file, mode, 0)
 
     def put(self, message):
-        self.file.write(json.dumps(serialize(message)))
-        self.file.write('\n')
+        self.file.write(json.dumps(serialize(message)).encode())
+        self.file.write('\n'.encode())
 
 
 class WebsocketChannel(object):
@@ -80,18 +80,18 @@ class WebsocketChannel(object):
             self.thread.kill()
             self.start_socket_thread()
 
-    def on_open(self, ws):
+    def on_open(self):
         pass
 
-    def on_message(self, ws):
+    def on_message(self):
         pass
 
-    def on_close(self, ws):
+    def on_close(self):
         self.thread.kill()
 
-    def on_error(self, ws, error):
+    def on_error(self, error):
         print ('WebsocketChannel on_error', error)
-        self.on_close(ws)
+        self.on_close()
         gevent.sleep(1)
         self.start_socket_thread()
 

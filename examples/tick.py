@@ -34,6 +34,7 @@ def main(args=None):
     else:
         logging.basicConfig(level=logging.WARNING)
 
+    logger.debug('start_pipeline')
     start_pipeline()
 
     return 0

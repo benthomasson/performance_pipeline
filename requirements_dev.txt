@@ -13,6 +13,8 @@ psutil
 pyzmq
 pycapnp
 websocket-client
+docopt
+gevent-websocket
 
 
 

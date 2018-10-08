@@ -16,7 +16,6 @@ from docopt import docopt
 import logging
 import sys
 from gevent_pipeline.conf import settings as gp_settings
-from collector_pipeline import start_pipeline
 
 
 logger = logging.getLogger('tick')
@@ -34,6 +33,8 @@ def main(args=None):
     else:
         logging.basicConfig(level=logging.WARNING)
 
+    from collector_pipeline import start_pipeline # noqa
+    logger.debug('start_pipeline')
     start_pipeline()
 
     return 0
