@@ -6,6 +6,7 @@ from gevent_pipeline.fsm import FSMController, NullTracer
 from performance_pipeline.data_channel import DataChannel, Channel
 
 import performance_pipeline.collect_fsm
+import performance_pipeline.events_fsm
 import performance_pipeline.web_fsm
 import performance_pipeline.replicate_fsm
 from util import FileChannel, WebsocketChannel
@@ -28,17 +29,24 @@ collector = FSMController(dict(),
                           performance_pipeline.collect_fsm.Start,
                           fsm_tracer,
                           channel_tracer)
+print ('collector')
+events = FSMController(dict(),
+                       'events_fsm',
+                       2,
+                       performance_pipeline.events_fsm.Start,
+                       fsm_tracer,
+                       channel_tracer)
 print ('replicator')
 replicator = FSMController(dict(),
                            'replicate_fsm',
-                           2,
+                           3,
                            performance_pipeline.replicate_fsm.Start,
                            fsm_tracer,
                            channel_tracer)
 print ('webserver')
 webserver = FSMController(dict(),
                           'web_fsm',
-                          3,
+                          4,
                           performance_pipeline.web_fsm.Start,
                           fsm_tracer,
                           channel_tracer)
@@ -49,6 +57,11 @@ collector.outboxes['default'] = DataChannel(collector,
                                             replicator,
                                             channel_tracer,
                                             replicator.inboxes['data'])
+
+events.outboxes['default'] = DataChannel(events,
+                                         replicator,
+                                         channel_tracer,
+                                         replicator.inboxes['data'])
 
 
 replicator.outboxes['default'] = Channel(replicator,

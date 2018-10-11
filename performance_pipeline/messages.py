@@ -13,3 +13,5 @@ Batch = namedtuple('Batch', ['data'])
 CpuUsage = namedtuple('CpuUsage', ['cpu_percent'])
 MemUsage = namedtuple('MemUsage', ['mem_percent'])
 Measurements = namedtuple('Measurements', ['measurements'])
+Event = namedtuple('Event', ['event_name'])
+

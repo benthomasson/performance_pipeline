@@ -36,3 +36,9 @@ struct Measurements {
   memory @3 :Memory;
   coverage @4 :Coverage;
 }
+
+struct Event {
+  id @0 :UInt64;
+  timestamp @1 :Text;
+  name @2 :Text;
+}
