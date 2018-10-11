@@ -12,7 +12,7 @@ from performance_pipeline.conf import settings
 from gevent.pywsgi import WSGIServer
 from geventwebsocket.handler import WebSocketHandler
 
-logger = logging.getLogger('tick')
+logger = logging.getLogger('util')
 
 
 class Bundle(object):
@@ -74,6 +74,8 @@ class WebsocketChannel(object):
         self.thread = gevent.spawn(self.socket.run_forever)
 
     def put(self, message):
+        message = message.data
+        print(repr(message))
         try:
             self.socket.send(json.dumps(serialize(message)))
         except:

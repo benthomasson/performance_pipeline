@@ -48,6 +48,7 @@ class _Collecting(State):
     def onMeasurements(self, controller, message_type, message):
         logger.debug("Collecting.onMeasurements")
         controller.outboxes['default'].put(messages.CpuUsage(message.cpu.cpu))
+        controller.outboxes['default'].put(messages.MemUsage(message.memory.percent))
 
     @transitions('Disabled')
     def onDisable(self, controller, message_type, message):
